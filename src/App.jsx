@@ -4,7 +4,7 @@ import Dashboard from "./Dashboard";
 import "./App.css";
 
 // URL of your Python Controller Service
-export const API_URL = "http://localhost:5000/api";
+export const API_URL = "http://35.222.45.221:5000/api";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));

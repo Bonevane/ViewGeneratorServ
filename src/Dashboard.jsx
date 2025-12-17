@@ -6,7 +6,7 @@ function Dashboard({ token }) {
   const [videos, setVideos] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
-  
+
   // New State for Search and Bulk Delete
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedVideos, setSelectedVideos] = useState(new Set());
@@ -80,24 +80,28 @@ function Dashboard({ token }) {
 
   // 4. Handle Bulk Delete
   const handleBulkDelete = async () => {
-    if (!confirm(`Are you sure you want to delete ${selectedVideos.size} videos?`)) return;
-    
+    if (
+      !confirm(`Are you sure you want to delete ${selectedVideos.size} videos?`)
+    )
+      return;
+
     setIsBulkDeleting(true);
     try {
-        // Execute all delete requests concurrently
-        const deletePromises = Array.from(selectedVideos).map(filename => 
-            axios.post(`${API_URL}/video/delete`, { filename }, authConfig)
-                .catch(err => console.error(`Failed to delete ${filename}`, err))
-        );
-        
-        await Promise.all(deletePromises);
-        
-        setStatusMsg("Bulk delete completed");
-        fetchVideos(); // Refresh list will also clear selection
+      // Execute all delete requests concurrently
+      const deletePromises = Array.from(selectedVideos).map((filename) =>
+        axios
+          .post(`${API_URL}/video/delete`, { filename }, authConfig)
+          .catch((err) => console.error(`Failed to delete ${filename}`, err))
+      );
+
+      await Promise.all(deletePromises);
+
+      setStatusMsg("Bulk delete completed");
+      fetchVideos(); // Refresh list will also clear selection
     } catch (err) {
-        alert("Error during bulk delete");
+      alert("Error during bulk delete");
     } finally {
-        setIsBulkDeleting(false);
+      setIsBulkDeleting(false);
     }
   };
 
@@ -105,27 +109,31 @@ function Dashboard({ token }) {
   const toggleSelection = (filename) => {
     const newSelection = new Set(selectedVideos);
     if (newSelection.has(filename)) {
-        newSelection.delete(filename);
+      newSelection.delete(filename);
     } else {
-        newSelection.add(filename);
+      newSelection.add(filename);
     }
     setSelectedVideos(newSelection);
   };
 
   const toggleSelectAll = () => {
-    if (selectedVideos.size === filteredVideos.length && filteredVideos.length > 0) {
-        setSelectedVideos(new Set());
+    if (
+      selectedVideos.size === filteredVideos.length &&
+      filteredVideos.length > 0
+    ) {
+      setSelectedVideos(new Set());
     } else {
-        setSelectedVideos(new Set(filteredVideos.map(v => v.filename)));
+      setSelectedVideos(new Set(filteredVideos.map((v) => v.filename)));
     }
   };
 
   // Filtered Videos based on Search
-  const filteredVideos = videos.filter(v => 
+  const filteredVideos = videos.filter((v) =>
     v.filename.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const isAllSelected = filteredVideos.length > 0 && selectedVideos.size === filteredVideos.length;
+  const isAllSelected =
+    filteredVideos.length > 0 && selectedVideos.size === filteredVideos.length;
 
   return (
     <div className="dashboard">
@@ -134,25 +142,29 @@ function Dashboard({ token }) {
         <h3>Upload New Video</h3>
         <p className="hint">Max 50MB Storage | Max 100MB Bandwidth/Day</p>
         <div className="upload-input-wrapper">
-            <input
+          <input
             type="file"
             accept="video/*"
             onChange={handleUpload}
             disabled={uploading}
             id="file-upload"
             style={{ display: "none" }}
-            />
-            <label htmlFor="file-upload" className="button" style={{
-                cursor: "pointer",
-                padding: "0.8rem 1.5rem",
-                backgroundColor: "var(--primary-color)",
-                color: "white",
-                borderRadius: "8px",
-                fontWeight: "500",
-                display: "inline-block"
-            }}>
-                {uploading ? "Uploading..." : "Select Video File"}
-            </label>
+          />
+          <label
+            htmlFor="file-upload"
+            className="button"
+            style={{
+              cursor: "pointer",
+              padding: "0.8rem 1.5rem",
+              backgroundColor: "var(--primary-color)",
+              color: "white",
+              borderRadius: "8px",
+              fontWeight: "500",
+              display: "inline-block",
+            }}
+          >
+            {uploading ? "Uploading..." : "Select Video File"}
+          </label>
         </div>
         {uploading && <span className="loader">Processing...</span>}
         {statusMsg && <p className="status-msg">{statusMsg}</p>}
@@ -161,81 +173,93 @@ function Dashboard({ token }) {
       {/* Search and Bulk Actions Bar */}
       <div className="actions-bar">
         <div className="search-wrapper">
-            <input 
-                type="text" 
-                placeholder="Search videos..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
-            />
+          <input
+            type="text"
+            placeholder="Search videos..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
         </div>
-        
+
         <div className="bulk-actions">
-            <label className="select-all-label">
-                <input 
-                    type="checkbox" 
-                    checked={isAllSelected}
-                    onChange={toggleSelectAll}
-                    disabled={filteredVideos.length === 0}
-                />
-                Select All
-            </label>
-            
-            {selectedVideos.size > 0 && (
-                <button 
-                    onClick={handleBulkDelete} 
-                    className="bulk-delete-btn"
-                    disabled={isBulkDeleting}
-                >
-                    {isBulkDeleting ? "Deleting..." : `Delete Selected (${selectedVideos.size})`}
-                </button>
-            )}
+          <label className="select-all-label">
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              onChange={toggleSelectAll}
+              disabled={filteredVideos.length === 0}
+            />
+            Select All
+          </label>
+
+          {selectedVideos.size > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              className="bulk-delete-btn"
+              disabled={isBulkDeleting}
+            >
+              {isBulkDeleting
+                ? "Deleting..."
+                : `Delete Selected (${selectedVideos.size})`}
+            </button>
+          )}
         </div>
       </div>
 
       {/* Video Grid */}
       <div>
-        <h3 style={{ marginBottom: "1rem" }}>My Videos ({filteredVideos.length})</h3>
+        <h3 style={{ marginBottom: "1rem" }}>
+          My Videos ({filteredVideos.length})
+        </h3>
         {filteredVideos.length === 0 ? (
-            <div className="empty-state">
-                <p>{searchQuery ? "No videos match your search." : "No videos found. Upload one to get started!"}</p>
-            </div>
+          <div className="empty-state">
+            <p>
+              {searchQuery
+                ? "No videos match your search."
+                : "No videos found. Upload one to get started!"}
+            </p>
+          </div>
         ) : (
-            <div className="video-grid">
+          <div className="video-grid">
             {filteredVideos.map((vid) => (
-                <div key={vid.filename} className={`video-card ${selectedVideos.has(vid.filename) ? "selected" : ""}`}>
+              <div
+                key={vid.filename}
+                className={`video-card ${
+                  selectedVideos.has(vid.filename) ? "selected" : ""
+                }`}
+              >
                 <div className="video-card-header">
-                    <input 
-                        type="checkbox"
-                        checked={selectedVideos.has(vid.filename)}
-                        onChange={() => toggleSelection(vid.filename)}
-                        className="video-checkbox"
-                    />
+                  <input
+                    type="checkbox"
+                    checked={selectedVideos.has(vid.filename)}
+                    onChange={() => toggleSelection(vid.filename)}
+                    className="video-checkbox"
+                  />
                 </div>
                 <div className="video-player-wrapper">
-                    <video controls>
-                    <source
-                        src={`${API_URL}/video/stream/${vid.filename}?token=${token}`}
-                        type="video/mp4"
-                    />
+                  <video controls>
+                    <source src={vid.url} type="video/mp4" />
                     Your browser does not support the video tag.
-                    </video>
+                  </video>
                 </div>
                 <div className="video-info">
-                    <h4>{vid.filename}</h4>
-                    <div className="video-meta">
-                        <span className="video-size">{(vid.size / (1024 * 1024)).toFixed(2)} MB</span>
-                        <button 
-                            onClick={() => handleDelete(vid.filename)}
-                            className="delete-btn"
-                        >
-                            Delete
-                        </button>
-                    </div>
+                  <h4>{vid.original_name}</h4>
+                  <div className="video-meta">
+                    <span className="video-size">
+                      {(vid.size / (1024 * 1024)).toFixed(2)} MB
+                    </span>
+                    <button
+                      onClick={() => handleDelete(vid.filename)}
+                      className="delete-btn"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-                </div>
+              </div>
             ))}
-            </div>
+          </div>
         )}
       </div>
     </div>
